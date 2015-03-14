@@ -24,8 +24,8 @@ public class CarBehavior : MonoBehaviour
     public float tankMass;
     public float driverMass;
 
-    public bool    forceApplied;
     public Vector3 force;
+    public Vector3 velocity;
 
 	// Use this for initialization
 	void Start ()
@@ -42,12 +42,16 @@ public class CarBehavior : MonoBehaviour
         leftForce    = GameObject.Find("LeftForce");
         rightForce   = GameObject.Find("RightForce");
 
+        upForce.SetActive(false);
+        leftForce.SetActive(false);
+        rightForce.SetActive(false);
+
         carMass    = 1000;
         tankMass   = 0;
         driverMass = 0;
 
-        forceApplied = false;
         force        = new Vector3();
+        velocity     = new Vector3();
 	}
 
     void OnGUI()
@@ -60,12 +64,18 @@ public class CarBehavior : MonoBehaviour
         label        += "\nTank Mass (T and Y) : " + tankMass + " kg";
         label        += "\nDriver Mass (D and F) : " + driverMass + " kg";
         label        += "\nTotal Mass  : " + carMass + " + " + tankMass + " + " + driverMass + " = " + (carMass + tankMass + driverMass) + " kg";
+        label        += "\n\nForce : " + force + " N";
+        label        += "\nVelocity : " + velocity + " m/s";
         GUI.Label(new Rect(0, 0, 500, 500), label);
     }
 
 	// Update is called once per frame
 	void Update ()
     {
+        force = new Vector3();
+        upForce.SetActive(false);
+        leftForce.SetActive(false);
+        rightForce.SetActive(false);
         CheckInput();
 	}
 
@@ -73,14 +83,10 @@ public class CarBehavior : MonoBehaviour
     {
         centerOfMass.transform.position = CalculateCenterOfMass(new float[3] { carMass, tankMass, driverMass }, new Vector3[3] { car.transform.position, tank.transform.position + car.transform.position, driver.transform.position + car.transform.position });
 
-        if(forceApplied)
-        {
-            Vector3 acceleration = force / (tankMass + driverMass + carMass);
-            Vector3 velocity = CalculateFinalVelocity(new Vector3(100, 0, 0), acceleration, Time.fixedDeltaTime);
-            car.transform.position = CalculateDisplacement(velocity, acceleration, Time.fixedDeltaTime, car.transform.position);
-            forceApplied = false;
-            Debug.Log("hi");
-        }
+        Vector3 acceleration = force / (tankMass + driverMass + carMass);
+
+        velocity = CalculateFinalVelocity(velocity, acceleration, Time.fixedDeltaTime);
+        car.transform.position = CalculateDisplacement(velocity, acceleration, Time.fixedDeltaTime, car.transform.position);
     }
 
     void CheckInput()
@@ -93,17 +99,24 @@ public class CarBehavior : MonoBehaviour
             driverMass = Mathf.Clamp(driverMass + 10, 0, 200);
         if (Input.GetKeyDown(KeyCode.D))
             driverMass = Mathf.Clamp(driverMass - 10, 0, 200);
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        if (Input.GetKey(KeyCode.UpArrow))
         {
-            forceApplied = true;
             force = new Vector3(0, 10000, 0);
+            upForce.SetActive(true);
         }
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKey(KeyCode.DownArrow))
         {
-            forceApplied = true;
             force = new Vector3(0, -10000, 0);
+            upForce.SetActive(true);
+        }  
+        if(Input.GetKey(KeyCode.RightArrow))
+        {
+            rightForce.SetActive(true);
         }
-            
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            leftForce.SetActive(true);
+        }
     }
 
     public static Vector3 CalculateCenterOfMass(float[] masses, Vector3[] positions)
