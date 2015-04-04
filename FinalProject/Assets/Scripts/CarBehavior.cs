@@ -16,16 +16,33 @@ public class CarBehavior : MonoBehaviour
     public GameObject tank;
     public GameObject driver;
     public GameObject centerOfMass;
-    public GameObject upForce;
-    public GameObject leftForce;
-    public GameObject rightForce;
+    public GameObject upForceObject;
+    public GameObject leftForceObject;
+    public GameObject rightForceObject;
 
     public float carMass;
     public float tankMass;
     public float driverMass;
 
     public Vector3 force;
+    public Vector3 leftForce;
+    public Vector3 rightForce;
     public Vector3 velocity;
+
+    public float totalInertia;
+
+    public Vector3 theta;
+    public Vector3 omega;
+    public Vector3 alpha;
+
+    public Vector3 radialUp;
+    public Vector3 radialLeft;
+    public Vector3 radialRight;
+
+    public Vector3 acceleration;
+    public Vector3 angle;
+
+    public float mew = 0.756f;
 
 	// Use this for initialization
 	void Start ()
@@ -34,24 +51,36 @@ public class CarBehavior : MonoBehaviour
         Application.targetFrameRate = 60;
         QualitySettings.vSyncCount  = 0;
 
-        car          = GameObject.Find("Car");
-        tank         = GameObject.Find("Tank");
-        driver       = GameObject.Find("Driver");
-        centerOfMass = GameObject.Find("COM");
-        upForce      = GameObject.Find("UpForce");
-        leftForce    = GameObject.Find("LeftForce");
-        rightForce   = GameObject.Find("RightForce");
+        car              = GameObject.Find("Car");
+        tank             = GameObject.Find("Tank");
+        driver           = GameObject.Find("Driver");
+        centerOfMass     = GameObject.Find("COM");
+        upForceObject    = GameObject.Find("UpForce");
+        leftForceObject  = GameObject.Find("LeftForce");
+        rightForceObject = GameObject.Find("RightForce");
 
-        upForce.SetActive(false);
-        leftForce.SetActive(false);
-        rightForce.SetActive(false);
+        upForceObject.SetActive(false);
+        leftForceObject.SetActive(false);
+        rightForceObject.SetActive(false);
 
-        carMass    = 1000;
-        tankMass   = 0;
-        driverMass = 0;
+        carMass      = 1000;
+        tankMass     = 0;
+        driverMass   = 0;
+        totalInertia = 0;
 
         force        = new Vector3();
         velocity     = new Vector3();
+
+        theta = new Vector3();
+        alpha = new Vector3();
+        omega = new Vector3();
+       
+        radialUp    = new Vector3();
+        radialLeft  = new Vector3();
+        radialRight = new Vector3();
+
+        acceleration = new Vector3();
+        angle        = new Vector3();
 	}
 
     void OnGUI()
@@ -72,22 +101,101 @@ public class CarBehavior : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        force = new Vector3();
-        upForce.SetActive(false);
-        leftForce.SetActive(false);
-        rightForce.SetActive(false);
+        force      = new Vector3();
+        leftForce  = new Vector3();
+        rightForce = new Vector3();
+
+        upForceObject.SetActive(false);
+        leftForceObject.SetActive(false);
+        rightForceObject.SetActive(false);
+
         CheckInput();
+
+
+        Vector3 uforce = Quaternion.Euler(0, 0, theta.z * Mathf.Rad2Deg) * force;
+        Vector3 lforce = Quaternion.Euler(0, 0, theta.z * Mathf.Rad2Deg) * leftForce;
+        Vector3 rforce = Quaternion.Euler(0, 0, theta.z * Mathf.Rad2Deg) * rightForce;
+
+        Vector3 com = CalculateCenterOfMass(new float[3] { carMass, tankMass, driverMass }, new Vector3[3] { car.transform.position, tank.transform.position + car.transform.position, driver.transform.position + car.transform.position });
+
+        //calculating the induvidual momements of inertia
+        float carInertia = MomentOfInertiaRectangle(carMass, CAR_WIDTH, CAR_HEIGHT);
+        float tankInertia = MomentOfInertiaRectangle(tankMass, TANK_WIDTH, TANK_HEIGHT);
+        float driverInertia = MomentOfInertiaRectangle(driverMass, DRIVER_WIDTH, DRIVER_HEIGHT);
+
+        //calculating the distance of the object to the center of mass
+        float carDistance = Vector3.Distance(car.transform.position, com);
+        float tankDistance = Vector3.Distance(tank.transform.position + car.transform.position, com);
+        float driverDistance = Vector3.Distance(driver.transform.position + car.transform.position, com);
+
+        //calculating the inertia of each object about the center of mass
+        float carInertiaAboutTheCom = MomentOfInertiaAboutACOM(carInertia, carMass, carDistance);
+        float tankInertiaAboutTheCom = MomentOfInertiaAboutACOM(tankInertia, tankMass, tankDistance);
+        float driverInertiaAboutTheCom = MomentOfInertiaAboutACOM(driverInertia, driverMass, driverDistance);
+
+        //calculating the total inertia
+        totalInertia = (carInertiaAboutTheCom + tankInertiaAboutTheCom + driverInertiaAboutTheCom);
+
+        acceleration = (uforce) / (tankMass + driverMass + carMass);
+
+        radialUp = (upForceObject.transform.position + car.transform.position) - com;
+        radialLeft = (leftForceObject.transform.position + car.transform.position) - com;
+        radialRight = (rightForceObject.transform.position + car.transform.position) - com;
+
+        Vector3 tourqueUp = Vector3.Cross(radialUp, uforce);
+        Vector3 tourqueLeft = Vector3.Cross(radialLeft, lforce);
+        Vector3 tourqueRight = Vector3.Cross(radialRight, rforce);
+
+        alpha = (tourqueLeft + tourqueRight) / totalInertia;
+
+        angle = (omega * (float)Time.deltaTime) + ((alpha * (float)Mathf.Pow((float)Time.deltaTime, 2)) / 2.0f);
+        theta += angle;
+        omega += (alpha * (float)Time.deltaTime);
+
+        velocity = CalculateFinalVelocity(velocity, acceleration, Time.deltaTime);
+        car.transform.position = CalculateDisplacement(velocity, acceleration, Time.deltaTime, car.transform.position);
+
+        car.transform.RotateAround(centerOfMass.transform.position, new Vector3(0, 0, 1), angle.z * Mathf.Rad2Deg);
 	}
 
-    void FixedUpdate()
+    /*void FixedUpdate()
     {
-        centerOfMass.transform.position = CalculateCenterOfMass(new float[3] { carMass, tankMass, driverMass }, new Vector3[3] { car.transform.position, tank.transform.position + car.transform.position, driver.transform.position + car.transform.position });
+        Vector3 uforce = Quaternion.Euler(0, 0, angle.z * Mathf.Rad2Deg) * force;
+        Vector3 lforce = Quaternion.Euler(0, 0, angle.z * Mathf.Rad2Deg) * leftForce;
+        //Vector3 rfource = Quaternion.Euler(0, 0, theta.z * Mathf.Rad2Deg) * rightForce;
 
-        Vector3 acceleration = force / (tankMass + driverMass + carMass);
+        Vector3 com = CalculateCenterOfMass(new float[3] { carMass, tankMass, driverMass }, new Vector3[3] { car.transform.position, tank.transform.position + car.transform.position, driver.transform.position + car.transform.position });
 
-        velocity = CalculateFinalVelocity(velocity, acceleration, Time.fixedDeltaTime);
-        car.transform.position = CalculateDisplacement(velocity, acceleration, Time.fixedDeltaTime, car.transform.position);
-    }
+        //calculating the induvidual momements of inertia
+        float carInertia    = MomentOfInertiaRectangle(carMass, CAR_WIDTH, CAR_HEIGHT);
+        float tankInertia   = MomentOfInertiaRectangle(tankMass, TANK_WIDTH, TANK_HEIGHT);
+        float driverInertia = MomentOfInertiaRectangle(driverMass, DRIVER_WIDTH, DRIVER_HEIGHT);
+
+        //calculating the distance of the object to the center of mass
+        float carDistance    = Vector3.Distance(car.transform.position, com);
+        float tankDistance   = Vector3.Distance(tank.transform.position + car.transform.position, com);
+        float driverDistance = Vector3.Distance(driver.transform.position + car.transform.position, com);
+
+        //calculating the inertia of each object about the center of mass
+        float carInertiaAboutTheCom    = MomentOfInertiaAboutACOM(carInertia, carMass, carDistance);
+        float tankInertiaAboutTheCom   = MomentOfInertiaAboutACOM(tankInertia, tankMass, tankDistance);
+        float driverInertiaAboutTheCom = MomentOfInertiaAboutACOM(driverInertia, driverMass, driverDistance);
+
+        //calculating the total inertia
+        totalInertia = (carInertiaAboutTheCom + tankInertiaAboutTheCom + driverInertiaAboutTheCom);
+
+        acceleration = (uforce + lforce) / (tankMass + driverMass + carMass); // + lforce + rfource
+
+        radialUp    = (upForceObject.transform.position + car.transform.position) - com;
+        radialLeft  = (leftForceObject.transform.position + car.transform.position) - com;
+        //radialRight = (rightForceObject.transform.position + car.transform.position) - com;
+
+        Vector3 tourqueUp    = Vector3.Cross(radialUp, uforce);
+        Vector3 tourqueLeft  = Vector3.Cross(radialLeft, lforce);
+        //Vector3 tourqueRight = Vector3.Cross(radialRight, rfource);
+
+        alpha = (tourqueUp + tourqueLeft) / totalInertia;//tourqueLeft + tourqueRight
+    }*/
 
     void CheckInput()
     {
@@ -102,20 +210,22 @@ public class CarBehavior : MonoBehaviour
         if (Input.GetKey(KeyCode.UpArrow))
         {
             force = new Vector3(0, 10000, 0);
-            upForce.SetActive(true);
+            upForceObject.SetActive(true);
         }
         if (Input.GetKey(KeyCode.DownArrow))
         {
             force = new Vector3(0, -10000, 0);
-            upForce.SetActive(true);
+            upForceObject.SetActive(true);
         }  
         if(Input.GetKey(KeyCode.RightArrow))
         {
-            rightForce.SetActive(true);
+            rightForce = new Vector3(0, 5000, 0);
+            rightForceObject.SetActive(true);
         }
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            leftForce.SetActive(true);
+            leftForce = new Vector3(0, 5000, 0);
+            leftForceObject.SetActive(true);
         }
     }
 
@@ -148,5 +258,31 @@ public class CarBehavior : MonoBehaviour
     public static Vector3 CalculateDisplacement(Vector3 velocity, Vector3 acceleration, float time, Vector3 pos)
     {
         return pos + (velocity * time) + ((acceleration * Mathf.Pow((float)time, 2) / 2.0f));
+    }
+
+    public static float MomentOfInertiaAboutACOM(float inertia, float mass, float distance)
+    {
+        return (float)(inertia + (mass * (float)Mathf.Pow(distance, 2)));
+    }
+
+    public static float MomentOfInertiaRectangle(float mass, float width, float height)
+    {
+        return (float)((mass * ((float)Mathf.Pow(width, 2) + (float)Mathf.Pow(height, 2))) / 12.0);
+    }
+
+    public static Vector3 CalculateFinalVelocityDrag(Vector3 velocity, float time, float k)
+    {
+        float x = velocity.x / (1.0f + (k * velocity.x * time));
+        float y = velocity.y / (1.0f + (k * velocity.y * time));
+        float z = velocity.z / (1.0f + (k * velocity.z * time));
+        return new Vector3(x, y, z);
+    }
+
+    public static Vector3 CalculateDisplacementDrag(Vector3 velocity, float time, float k, Vector3 pos)
+    {
+        float x = pos.x + (Mathf.Log(1.0f + k * velocity.x * time, Mathf.Exp(1)) / k);
+        float y = pos.y + (Mathf.Log(1.0f + k * velocity.y * time, Mathf.Exp(1)) / k);
+        float z = pos.z + (Mathf.Log(1.0f + k * velocity.z * time, Mathf.Exp(1)) / k);
+        return new Vector3(x, y, z);
     }
 }
