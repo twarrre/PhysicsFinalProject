@@ -47,7 +47,7 @@ public class CarBehavior : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
-        Time.fixedDeltaTime         = 1 / 60;
+        Time.fixedDeltaTime         = 1.0f / 60.0f;
         Application.targetFrameRate = 60;
         QualitySettings.vSyncCount  = 0;
 
