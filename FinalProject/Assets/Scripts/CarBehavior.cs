@@ -42,7 +42,10 @@ public class CarBehavior : MonoBehaviour
     public Vector3 acceleration;
     public Vector3 angle;
 
-    public float mew = 0.756f;
+    public float drag = 1;
+
+    public const float C = 150;
+    public float c;
 
 	// Use this for initialization
 	void Start ()
@@ -81,6 +84,8 @@ public class CarBehavior : MonoBehaviour
 
         acceleration = new Vector3();
         angle        = new Vector3();
+
+        c = C * drag;
 	}
 
     void OnGUI()
@@ -152,8 +157,11 @@ public class CarBehavior : MonoBehaviour
         theta += angle;
         omega += (alpha * (float)Time.deltaTime);
 
-        velocity = CalculateFinalVelocity(velocity, acceleration, Time.deltaTime);
-        car.transform.position = CalculateDisplacement(velocity, acceleration, Time.deltaTime, car.transform.position);
+        velocity = (uforce - Mathf.Exp(-(c * Time.deltaTime / (tankMass + driverMass + carMass))) * (uforce - c * velocity)) / c;
+        car.transform.position = car.transform.position + (uforce / c * Time.deltaTime) + ((uforce - (c * velocity)) / c) * ((tankMass + driverMass + carMass) / c) * (Mathf.Exp(-(c * Time.deltaTime / (tankMass + driverMass + carMass))) - 1);
+
+        //velocity = CalculateFinalVelocity(velocity, acceleration, Time.deltaTime);
+        //car.transform.position = CalculateDisplacement(velocity, acceleration, Time.deltaTime, car.transform.position);
 
         car.transform.RotateAround(centerOfMass.transform.position, new Vector3(0, 0, 1), angle.z * Mathf.Rad2Deg);
 	}
@@ -268,21 +276,5 @@ public class CarBehavior : MonoBehaviour
     public static float MomentOfInertiaRectangle(float mass, float width, float height)
     {
         return (float)((mass * ((float)Mathf.Pow(width, 2) + (float)Mathf.Pow(height, 2))) / 12.0);
-    }
-
-    public static Vector3 CalculateFinalVelocityDrag(Vector3 velocity, float time, float k)
-    {
-        float x = velocity.x / (1.0f + (k * velocity.x * time));
-        float y = velocity.y / (1.0f + (k * velocity.y * time));
-        float z = velocity.z / (1.0f + (k * velocity.z * time));
-        return new Vector3(x, y, z);
-    }
-
-    public static Vector3 CalculateDisplacementDrag(Vector3 velocity, float time, float k, Vector3 pos)
-    {
-        float x = pos.x + (Mathf.Log(1.0f + k * velocity.x * time, Mathf.Exp(1)) / k);
-        float y = pos.y + (Mathf.Log(1.0f + k * velocity.y * time, Mathf.Exp(1)) / k);
-        float z = pos.z + (Mathf.Log(1.0f + k * velocity.z * time, Mathf.Exp(1)) / k);
-        return new Vector3(x, y, z);
     }
 }
