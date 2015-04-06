@@ -44,8 +44,11 @@ public class CarBehavior : MonoBehaviour
 
     public float drag = 1;
 
-    public const float C = 150;
+    public const float C = 150f;
     public float c;
+
+    public const float Crot = 500000f;
+    public float crot;
 
 	// Use this for initialization
 	void Start ()
@@ -85,7 +88,8 @@ public class CarBehavior : MonoBehaviour
         acceleration = new Vector3();
         angle        = new Vector3();
 
-        c = C * drag;
+        c    = C * drag;
+        crot = Crot * drag;
 	}
 
     void OnGUI()
@@ -100,6 +104,7 @@ public class CarBehavior : MonoBehaviour
         label        += "\nTotal Mass  : " + carMass + " + " + tankMass + " + " + driverMass + " = " + (carMass + tankMass + driverMass) + " kg";
         label        += "\n\nForce : " + force + " N";
         label        += "\nVelocity : " + velocity + " m/s";
+        label        += "\nOmega : " + omega + " rad/s";
         GUI.Label(new Rect(0, 0, 500, 500), label);
     }
 
@@ -153,12 +158,14 @@ public class CarBehavior : MonoBehaviour
 
         alpha = (tourqueLeft + tourqueRight) / totalInertia;
 
-        angle = (omega * (float)Time.deltaTime) + ((alpha * (float)Mathf.Pow((float)Time.deltaTime, 2)) / 2.0f);
+        //maybe just tourques and then the mass is replaced with total inierita?
+        angle = ((tourqueLeft + tourqueRight) / crot * Time.deltaTime) + (((tourqueLeft + tourqueRight) - (crot * omega)) / crot) * (totalInertia / crot) * (Mathf.Exp(-(crot * Time.deltaTime / totalInertia)) - 1); //(omega * (float)Time.deltaTime) + ((alpha * (float)Mathf.Pow((float)Time.deltaTime, 2)) / 2.0f);
         theta += angle;
-        omega += (alpha * (float)Time.deltaTime);
+        omega = ((tourqueLeft + tourqueRight) - Mathf.Exp(-(crot * Time.deltaTime / totalInertia)) * ((tourqueLeft + tourqueRight) - crot * omega)) / crot; //(alpha * (float)Time.deltaTime);
 
+        //uforce cause equation takes mass into consideration sp not acceleration?
         velocity = (uforce - Mathf.Exp(-(c * Time.deltaTime / (tankMass + driverMass + carMass))) * (uforce - c * velocity)) / c;
-        car.transform.position = car.transform.position + (uforce / c * Time.deltaTime) + ((uforce - (c * velocity)) / c) * ((tankMass + driverMass + carMass) / c) * (Mathf.Exp(-(c * Time.deltaTime / (tankMass + driverMass + carMass))) - 1);
+        car.transform.position = car.transform.position + (acceleration / c * Time.deltaTime) + ((acceleration - (c * velocity)) / c) * ((tankMass + driverMass + carMass) / c) * (Mathf.Exp(-(c * Time.deltaTime / (tankMass + driverMass + carMass))) - 1);
 
         //velocity = CalculateFinalVelocity(velocity, acceleration, Time.deltaTime);
         //car.transform.position = CalculateDisplacement(velocity, acceleration, Time.deltaTime, car.transform.position);
