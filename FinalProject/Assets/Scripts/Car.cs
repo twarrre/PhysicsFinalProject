@@ -1,7 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Car : MonoBehaviour {
+public class Car : MonoBehaviour
+{
+    [SerializeField]
+    private Box box1;
+
     public const float CAR_WIDTH = 200;
     public const float CAR_HEIGHT = 100;
 
@@ -21,6 +25,8 @@ public class Car : MonoBehaviour {
     public float carMass;
     public float tankMass;
     public float driverMass;
+
+    public float radius;
 
     public Vector3 force;
     public Vector3 leftForce;
@@ -47,8 +53,9 @@ public class Car : MonoBehaviour {
 
     public const float Crot = 500000f;
     public float crot;
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
         Time.fixedDeltaTime = 1.0f / 60.0f;
         Application.targetFrameRate = 60;
         QualitySettings.vSyncCount = 0;
@@ -64,6 +71,7 @@ public class Car : MonoBehaviour {
         leftForceObject.SetActive(false);
         rightForceObject.SetActive(false);
 
+        radius = Mathf.Sqrt(Mathf.Pow(CAR_WIDTH / 2.0f, 2.0f) + Mathf.Pow(CAR_HEIGHT / 2.0f, 2.0f)); 
         carMass = 1000;
         tankMass = 0;
         driverMass = 0;
@@ -84,8 +92,8 @@ public class Car : MonoBehaviour {
         angle = new Vector3();
 
         c = C * drag;
-        crot = Crot * drag;	
-	}
+        crot = Crot * drag;
+    }
 
     public void UpdateForces()
     {
@@ -148,12 +156,13 @@ public class Car : MonoBehaviour {
         //velocity = CalculateFinalVelocity(velocity, acceleration, Time.deltaTime);
         //car.transform.position = CalculateDisplacement(velocity, acceleration, Time.deltaTime, car.transform.position);
 
-        this.transform.RotateAround(centerOfMass.transform.position, new Vector3(0, 0, 1), angle.z * Mathf.Rad2Deg);	
+        this.transform.RotateAround(centerOfMass.transform.position, new Vector3(0, 0, 1), angle.z * Mathf.Rad2Deg);
     }
-	// Update is called once per frame
-	void Update () {
+    // Update is called once per frame
+    void Update()
+    {
 
-	}
+    }
 
     public static Vector3 CalculateCenterOfMass(float[] masses, Vector3[] positions)
     {
@@ -194,5 +203,17 @@ public class Car : MonoBehaviour {
     public static float MomentOfInertiaRectangle(float mass, float width, float height)
     {
         return (float)((mass * ((float)Mathf.Pow(width, 2) + (float)Mathf.Pow(height, 2))) / 12.0);
+    }
+
+    public bool CheckCarCollision(Box theBox)
+    {
+        if (Vector3.Distance(this.transform.position, theBox.transform.position) <= this.radius + theBox.radius)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

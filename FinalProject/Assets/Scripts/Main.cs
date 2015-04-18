@@ -39,6 +39,7 @@ public class Main : MonoBehaviour
         CheckInput();
         car.UpdatePhysics();
         zeroBox.UpdatePhysics();
+        car.CheckCarCollision(zeroBox);
 	}
 
     /*void FixedUpdate()

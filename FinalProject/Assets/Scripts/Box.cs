@@ -8,6 +8,8 @@ public class Box : MonoBehaviour {
 
     public int mass = 500;
 
+    public float radius;
+
     public Vector3 velocity;
     public Vector3 theta;
     public Vector3 omega;
@@ -30,6 +32,7 @@ public class Box : MonoBehaviour {
 	// Use this for initialization
 	void Start ()
     {
+        radius = Mathf.Sqrt(Mathf.Pow(WIDTH / 2.0f, 2.0f) + Mathf.Pow(HEIGHT / 2.0f, 2.0f)); 
         sphere1 = GameObject.Find("Sphere1");
         sphere2 = GameObject.Find("Sphere2");
         sphere3 = GameObject.Find("Sphere3");
