@@ -6,6 +6,9 @@ public class Main : MonoBehaviour
     [SerializeField]
     private Car car;
 
+    [SerializeField]
+    private Box zeroBox;
+
 	// Use this for initialization
 	void Start ()
     {
@@ -32,8 +35,10 @@ public class Main : MonoBehaviour
 	void Update ()
     {
         car.UpdateForces();
+        zeroBox.UpdateForces();
         CheckInput();
         car.UpdatePhysics();
+        zeroBox.UpdatePhysics();
 	}
 
     /*void FixedUpdate()
