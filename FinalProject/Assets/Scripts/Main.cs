@@ -39,7 +39,23 @@ public class Main : MonoBehaviour
         CheckInput();
         car.UpdatePhysics();
         zeroBox.UpdatePhysics();
-        CheckCarCollision(car, zeroBox);
+        
+        if(CheckCarCollision(car, zeroBox))
+        {
+            /*Vector3 normal = new Vector3(1, 0, 0);
+            Vector3 r1 = new Vector3() - car.transform.position;
+            Vector3 r2 = new Vector3() - zeroBox.transform.position;
+
+            Vector3 vr = CalculateVR(car.velocity, zeroBox.velocity);
+
+            float j = CalculateJ(vr.x, zeroBox.e, car.carMass, zeroBox.mass, normal, r1, r2, car.totalInertia, zeroBox.inertia);
+
+            car.velocity = CalculateVelocityFinal(j * normal, car.carMass, car.velocity.x, normal);
+            zeroBox.velocity = CalculateVelocityFinal(-j * normal, zeroBox.mass, zeroBox.velocity.x, normal);
+
+            car.omega = CalculateAngularVelocity(new Vector3(), r1, j * normal, car.totalInertia);
+            zeroBox.omega = CalculateAngularVelocity(new Vector3(), r2, -j * normal, zeroBox.inertia);*/
+        }
 	}
 
     /*void FixedUpdate()
@@ -125,4 +141,36 @@ public class Main : MonoBehaviour
         }
     }
 
+    public static Vector3 CalculateVR(Vector3 uInitial, Vector3 vInital)
+    {
+        return uInitial - vInital;
+    }
+
+    public static float CalculateJ(float vr, float e, float mass1, float mass2, Vector3 normal, Vector3 r1, Vector3 r2, float inertia1, float inertia2)
+    {
+        float firstPart = Vector3.Dot(normal, CalculateJPart(r1, normal, inertia1));
+        float secondPart = Vector3.Dot(normal, CalculateJPart(r2, normal, inertia2));
+
+        return (-vr) * (e + 1.0f) * (1.0f / ((1.0f / mass1) + (1.0f / mass2) + firstPart + secondPart));
+    }
+
+    public static Vector3 CalculateJPart(Vector3 r, Vector3 normal, float inertia)
+    {
+        return Vector3.Cross(Vector3.Cross(r, normal) / inertia, r);
+    }
+
+    public static Vector3 CalculateVelocityFinal(Vector3 jn, float mass, float velix, Vector3 normal)
+    {
+        return (jn / mass) + (velix * normal);
+    }
+
+    public static Vector3 CalculateAngularVelocity(Vector3 angularInital, Vector3 r, Vector3 jn, float inertia)
+    {
+        return angularInital + (Vector3.Cross(r, jn) / inertia);
+    }
+
+    public static Vector3 CalculateAngularDisplacement(Vector3 omega, float time)
+    {
+        return (omega * time);
+    }
 }

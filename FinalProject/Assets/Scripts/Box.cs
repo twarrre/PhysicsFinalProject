@@ -25,7 +25,7 @@ public class Box : MonoBehaviour {
     public GameObject sphere3;
     public GameObject sphere4;
 
-    float inertia;
+    public float inertia;
 
     public float e = 0.0f;
 
