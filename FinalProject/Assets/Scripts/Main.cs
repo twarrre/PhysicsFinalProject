@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CarBehavior : MonoBehaviour 
+public class Main : MonoBehaviour 
 {
     public const float CAR_WIDTH     = 200;
     public const float CAR_HEIGHT    = 100;
