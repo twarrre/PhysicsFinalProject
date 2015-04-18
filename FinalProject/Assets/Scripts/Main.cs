@@ -9,6 +9,20 @@ public class Main : MonoBehaviour
     [SerializeField]
     private Box zeroBox;
 
+    //Assignment 11 collision
+    Vector3 normalVec;
+    float mofI1;
+    float mofI2;
+    float vr;
+    float J; // impulse
+    Vector3 omega1;
+    Vector3 omega2;
+    Vector3 UfN;
+    Vector3 VfN;
+    Vector3 r1;
+    Vector3 r2;
+    Vector3 contactPoint;
+
 	// Use this for initialization
 	void Start ()
     {
@@ -129,10 +143,7 @@ public class Main : MonoBehaviour
         }
     }
 
-    public bool CheckCarCollision(Car theCar, Box theBox)
-    {
-        if (Vector3.Distance(theCar.transform.position, theBox.transform.position) <= theCar.radius + theBox.radius)
-        {
+    /*
             for (int i = 0; i < theCar.corners.Length; i++ )
             {
                 for(int j = 0; j < theBox.corners.Length; j++)
@@ -143,7 +154,8 @@ public class Main : MonoBehaviour
                     if (j == (theBox.corners.Length - 1))
                         index = 0;
 
-                    Vector3 u = Vector3.Normalize(theBox.corners[index] - theBox.corners[j]);
+                    Vector3 uVec = theBox.corners[index] - theBox.corners[j];
+                    Vector3 u = Vector3.Normalize(uVec);
 
                     float projection = Vector3.Dot(p, u);
                     float d = Vector3.Cross(p, u).magnitude;
@@ -151,13 +163,43 @@ public class Main : MonoBehaviour
 
                     float vrn = Vector3.Dot(theCar.velocity - theBox.velocity, normal);
 
-                    if(projection > 0.0f && projection < u.magnitude && d < 0.1f && vrn < 0.0f)
+                    Debug.Log("projection > 0.0f: " + (projection > 0.0f));
+                    Debug.Log("projection < uVec.magnitude: " + (projection < uVec.magnitude));
+                    Debug.Log("d < 0.1f: " + (d < 0.1f));
+                    Debug.Log("vrn < 0: " + (vrn < 0.0f));
+                    if(projection > 0.0f && projection < uVec.magnitude && d < 0.1f && vrn < 0.0f)
                     {
                         return true;
                     }
                 }
             }
             return false;
+     */
+
+    void CubeCollisionResponse(Car c, Box b, Vector3 Ui, Vector3 Vi)
+    {
+        contactPoint = new Vector3(b.transform.position.x - 20.0f, c.transform.position.y + ((b.transform.position.y - c.transform.position.y) / 2.0f), 0.0f);
+        r1 = new Vector3(contactPoint.x - c.transform.position.x, contactPoint.y - c.transform.position.y, contactPoint.z - c.transform.position.z);
+        r2 = new Vector3(contactPoint.x - b.transform.position.x, contactPoint.y - b.transform.position.y, contactPoint.z - b.transform.position.z);
+        normalVec = new Vector3(1.0f, 0.0f, 0.0f);
+        mofI1 = 1.0f / 12.0f * c.carMass * ((Mathf.Pow(c.transform.lossyScale.x, 2.0f) + Mathf.Pow(c.transform.lossyScale.y, 2.0f)));
+        mofI2 = 1.0f / 12.0f * b.mass * ((Mathf.Pow(b.transform.lossyScale.x, 2.0f) + Mathf.Pow(b.transform.lossyScale.y, 2.0f)));
+        vr = (Ui.x - Vi.x);
+        J = -vr * (b.e + 1.0f) * (1.0f / ((1.0f / c.carMass) + (1.0f / b.mass) + Vector3.Dot(normalVec, Vector3.Cross(Vector3.Cross(r1, normalVec) / mofI1, r1)) + Vector3.Dot(normalVec, Vector3.Cross(Vector3.Cross(r2, normalVec) / mofI2, r2))));
+        omega1 = omega1 + Vector3.Cross(r1, (J * normalVec)) / mofI1;
+        omega2 = omega2 + Vector3.Cross(r2, ((-J) * normalVec)) / mofI2;
+        UfN = ((J * normalVec) / c.carMass) + (Ui.x * normalVec);
+        VfN = (((-J) * normalVec) / b.mass) + (Vi.x * normalVec);
+        c.velocity = UfN;
+        b.velocity = VfN;
+    }
+
+    public bool CheckCarCollision(Car theCar, Box theBox)
+    {
+        if (Vector3.Distance(theCar.transform.position, theBox.transform.position) <= theCar.radius + theBox.radius)
+        {
+            //CubeCollisionResponse(car, zeroBox, car.velocity, zeroBox.velocity);
+            return true;
         }
         else
         {

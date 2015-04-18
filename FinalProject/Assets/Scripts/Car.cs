@@ -48,7 +48,7 @@ public class Car : MonoBehaviour
 
     public float drag = 1;
 
-    public const float C = 150f;
+    public const float C = 300f;
     public float c;
 
     public const float Crot = 500000f;
