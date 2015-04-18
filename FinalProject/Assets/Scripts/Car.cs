@@ -54,10 +54,7 @@ public class Car : MonoBehaviour
     public const float Crot = 500000f;
     public float crot;
 
-    public Vector3 corner1;
-    public Vector3 corner2;
-    public Vector3 corner3;
-    public Vector3 corner4;
+    public Vector3[] corners;
 
     public GameObject sphere1;
     public GameObject sphere2;
@@ -109,14 +106,15 @@ public class Car : MonoBehaviour
         sphere2 = GameObject.Find("CarSphere2");
         sphere3 = GameObject.Find("CarSphere3");
         sphere4 = GameObject.Find("CarSphere4");
+        corners = new Vector3[4];
     }
 
     public void UpdateForces()
     {
-        corner1 = sphere1.transform.position;
-        corner2 = sphere2.transform.position;
-        corner3 = sphere3.transform.position;
-        corner4 = sphere4.transform.position;
+        corners[0] = sphere1.transform.position;
+        corners[1] = sphere2.transform.position;
+        corners[2] = sphere3.transform.position;
+        corners[3] = sphere4.transform.position;
 
         force = new Vector3();
         leftForce = new Vector3();

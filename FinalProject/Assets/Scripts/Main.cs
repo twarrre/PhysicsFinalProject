@@ -12,7 +12,6 @@ public class Main : MonoBehaviour
 	// Use this for initialization
 	void Start ()
     {
-
 	}
 
     void OnGUI()
@@ -42,6 +41,7 @@ public class Main : MonoBehaviour
         
         if(CheckCarCollision(car, zeroBox))
         {
+            Debug.Log("HIT");
             /*Vector3 normal = new Vector3(1, 0, 0);
             Vector3 r1 = new Vector3() - car.transform.position;
             Vector3 r2 = new Vector3() - zeroBox.transform.position;
@@ -133,7 +133,31 @@ public class Main : MonoBehaviour
     {
         if (Vector3.Distance(theCar.transform.position, theBox.transform.position) <= theCar.radius + theBox.radius)
         {
-            return true;
+            for (int i = 0; i < theCar.corners.Length; i++ )
+            {
+                for(int j = 0; j < theBox.corners.Length; j++)
+                {
+                    Vector3 p = theCar.corners[i] - theBox.corners[j];
+
+                    int index = j + 1;
+                    if (j == (theBox.corners.Length - 1))
+                        index = 0;
+
+                    Vector3 u = Vector3.Normalize(theBox.corners[index] - theBox.corners[j]);
+
+                    float projection = Vector3.Dot(p, u);
+                    float d = Vector3.Cross(p, u).magnitude;
+                    Vector3 normal = Vector3.Normalize(Vector3.Cross(Vector3.Cross(u, p), u));
+
+                    float vrn = Vector3.Dot(theCar.velocity - theBox.velocity, normal);
+
+                    if(projection > 0.0f && projection < u.magnitude && d < 0.1f && vrn < 0.0f)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
         else
         {

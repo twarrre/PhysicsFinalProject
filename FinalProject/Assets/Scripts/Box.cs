@@ -15,10 +15,7 @@ public class Box : MonoBehaviour {
     public Vector3 omega;
     public Vector3 alpha;
 
-    public Vector3 corner1;
-    public Vector3 corner2;
-    public Vector3 corner3;
-    public Vector3 corner4;
+    public Vector3[] corners;
 
     public GameObject sphere1;
     public GameObject sphere2;
@@ -39,8 +36,9 @@ public class Box : MonoBehaviour {
         sphere4 = GameObject.Find("Sphere4");
 
         mass = 0;
-        velocity = corner1 = corner2 = corner3 = corner4 = theta = alpha = omega = new Vector3();
+        velocity = theta = alpha = omega = new Vector3();
         inertia = 0.0f;
+        corners = new Vector3[4];
 	}
 	
 	// Update is called once per frame
@@ -50,10 +48,10 @@ public class Box : MonoBehaviour {
 
     public void UpdateForces()
     {
-        corner1 = sphere1.transform.position;
-        corner2 = sphere2.transform.position;
-        corner3 = sphere3.transform.position;
-        corner4 = sphere4.transform.position;
+        corners[0] = sphere1.transform.position;
+        corners[1] = sphere2.transform.position;
+        corners[2] = sphere3.transform.position;
+        corners[3] = sphere4.transform.position;
     }
 
     public void UpdatePhysics()
