@@ -39,7 +39,7 @@ public class Main : MonoBehaviour
         CheckInput();
         car.UpdatePhysics();
         zeroBox.UpdatePhysics();
-        car.CheckCarCollision(zeroBox);
+        CheckCarCollision(car, zeroBox);
 	}
 
     /*void FixedUpdate()
@@ -113,5 +113,16 @@ public class Main : MonoBehaviour
         }
     }
 
+    public bool CheckCarCollision(Car theCar, Box theBox)
+    {
+        if (Vector3.Distance(theCar.transform.position, theBox.transform.position) <= theCar.radius + theBox.radius)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
 }

@@ -204,16 +204,4 @@ public class Car : MonoBehaviour
     {
         return (float)((mass * ((float)Mathf.Pow(width, 2) + (float)Mathf.Pow(height, 2))) / 12.0);
     }
-
-    public bool CheckCarCollision(Box theBox)
-    {
-        if (Vector3.Distance(this.transform.position, theBox.transform.position) <= this.radius + theBox.radius)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
 }
