@@ -72,7 +72,6 @@ public class Main : MonoBehaviour
         }
 
         KeepInBounds(ref car);
-        KeepInBounds(ref zeroBox);
 	}
 
     /*void FixedUpdate()
@@ -225,64 +224,56 @@ public class Main : MonoBehaviour
             if(corner.x > 400)
             {
                float distance = Vector3.Distance(new Vector3(corner.x, 0, 0), new Vector3(400, 0, 0));
-               theCar.transform.position = new Vector3(theCar.transform.position.x - distance - 1, theCar.transform.position.y, theCar.transform.position.z);
+               theCar.transform.position = new Vector3(theCar.transform.position.x - distance, theCar.transform.position.y, theCar.transform.position.z);
             }
             else if(corner.x < -400)
             {
                 float distance = Vector3.Distance(new Vector3(corner.x, 0, 0), new Vector3(-400, 0, 0));
-                theCar.transform.position = new Vector3(theCar.transform.position.x + distance + 1, theCar.transform.position.y, theCar.transform.position.z);
+                theCar.transform.position = new Vector3(theCar.transform.position.x + distance, theCar.transform.position.y, theCar.transform.position.z);
             }
             else if(corner.y > 400)
             {
                 float distance = Vector3.Distance(new Vector3(0, corner.y, 0), new Vector3(0, 400, 0));
-                theCar.transform.position = new Vector3(theCar.transform.position.x, theCar.transform.position.y - distance - 1, theCar.transform.position.z);
+                theCar.transform.position = new Vector3(theCar.transform.position.x, theCar.transform.position.y - distance, theCar.transform.position.z);
             }
             else if (corner.y < -400)
             {
                 float distance = Vector3.Distance(new Vector3(0, corner.y, 0), new Vector3(0, -400, 0));
-                theCar.transform.position = new Vector3(theCar.transform.position.x, theCar.transform.position.y + distance + 1, theCar.transform.position.z);
+                theCar.transform.position = new Vector3(theCar.transform.position.x, theCar.transform.position.y + distance, theCar.transform.position.z);
             }
         }
     }
 
     public void KeepInBounds(ref Box theBox)
     {
-        bool hit = false;
         for (int i = 0; i < theBox.corners.Length; i++)
         {
             Vector3 corner = theBox.corners[i];
             if (corner.x > 400)
             {
                 float distance = Vector3.Distance(new Vector3(corner.x, 0, 0), new Vector3(400, 0, 0));
-                theBox.transform.position = new Vector3(theBox.transform.position.x - distance - 1, theBox.transform.position.y, theBox.transform.position.z);
-                theBox.UpdateForces();
-                hit = true;
+                theBox.transform.position = new Vector3(theBox.transform.position.x - distance, theBox.transform.position.y, theBox.transform.position.z);
+                theBox.velocity = -theBox.velocity;
             }
             else if (corner.x < -400)
             {
                 float distance = Vector3.Distance(new Vector3(corner.x, 0, 0), new Vector3(-400, 0, 0));
-                theBox.transform.position = new Vector3(theBox.transform.position.x + distance + 1, theBox.transform.position.y, theBox.transform.position.z);
-                theBox.UpdateForces();
-                hit = true;
+                theBox.transform.position = new Vector3(theBox.transform.position.x + distance, theBox.transform.position.y, theBox.transform.position.z);
+                theBox.velocity = -theBox.velocity;
             }
             else if (corner.y > 400)
             {
                 float distance = Vector3.Distance(new Vector3(0, corner.y, 0), new Vector3(0, 400, 0));
-                theBox.transform.position = new Vector3(theBox.transform.position.x, theBox.transform.position.y - distance - 1, theBox.transform.position.z);
-                theBox.UpdateForces();
-                hit = true;
+                theBox.transform.position = new Vector3(theBox.transform.position.x, theBox.transform.position.y - distance, theBox.transform.position.z);
+                theBox.velocity = -theBox.velocity;
             }
             else if (corner.y < -400)
             {
                 float distance = Vector3.Distance(new Vector3(0, corner.y, 0), new Vector3(0, -400, 0));
-                theBox.transform.position = new Vector3(theBox.transform.position.x, theBox.transform.position.y + distance + 1, theBox.transform.position.z);
-                theBox.UpdateForces();
-                hit = true;
+                theBox.transform.position = new Vector3(theBox.transform.position.x, theBox.transform.position.y + distance, theBox.transform.position.z);
+                theBox.velocity = -theBox.velocity;
             }
         }
-
-        if(hit)
-            theBox.velocity = -theBox.velocity;
     }
 
     public Vector3 NarrowFace(Car theCar, Box theBox, out float distance)
