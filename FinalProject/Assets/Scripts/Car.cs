@@ -161,7 +161,7 @@ public class Car : MonoBehaviour
         Vector3 tourqueLeft = Vector3.Cross(radialLeft, lforce);
         Vector3 tourqueRight = Vector3.Cross(radialRight, rforce);
 
-        alpha = (tourqueLeft + tourqueRight) / totalInertia;
+        alpha = (tourqueLeft - tourqueRight) / totalInertia;
 
         //maybe just tourques and then the mass is replaced with total inierita?
         angle = ((tourqueLeft + tourqueRight) / crot * Time.deltaTime) + (((tourqueLeft + tourqueRight) - (crot * omega)) / crot) * (totalInertia / crot) * (Mathf.Exp(-(crot * Time.deltaTime / totalInertia)) - 1); //(omega * (float)Time.deltaTime) + ((alpha * (float)Mathf.Pow((float)Time.deltaTime, 2)) / 2.0f);
