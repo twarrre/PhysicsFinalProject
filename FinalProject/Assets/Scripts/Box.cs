@@ -35,7 +35,7 @@ public class Box : MonoBehaviour {
         sphere3 = GameObject.Find("Sphere3");
         sphere4 = GameObject.Find("Sphere4");
 
-        mass = 0;
+        mass = 10;
         velocity = theta = alpha = omega = new Vector3();
         inertia = 0.0f;
         corners = new Vector3[4];
@@ -66,7 +66,7 @@ public class Box : MonoBehaviour {
         return velocity + (acceleration * time);
     }
 
-    public static Vector3 CalculateDisplacement(Vector3 velocity, Vector3 acceleration, float time, Vector3 pos)
+    public Vector3 CalculateDisplacement(Vector3 velocity, Vector3 acceleration, float time, Vector3 pos)
     {
         return pos + (velocity * time) + ((acceleration * Mathf.Pow((float)time, 2) / 2.0f));
     }
