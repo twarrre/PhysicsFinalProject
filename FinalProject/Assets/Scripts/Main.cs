@@ -203,7 +203,6 @@ public class Main : MonoBehaviour
             if (clipDist != float.MaxValue)
                 Debug.Log("HIT");
 
-            Debug.Log(clipDist);
 
             //contactPoint = new Vector3(zeroBox.transform.position.x - 20.0f, car.transform.position.y + ((zeroBox.transform.position.y - car.transform.position.y) / 2.0f), 0.0f);
             //CubeCollisionResponse(car, zeroBox, car.velocity, zeroBox.velocity);
@@ -227,23 +226,32 @@ public class Main : MonoBehaviour
         edges[3] = theBox.corners[0] - theBox.corners[3];
 
         Vector3[] normals = new Vector3[4];
-        normals[0] = new Vector3(edges[0].y, -edges[0].x, edges[0].z);
-        normals[1] = new Vector3(edges[1].y, -edges[1].x, edges[1].z);
-        normals[2] = new Vector3(edges[2].y, -edges[2].x, edges[2].z);
-        normals[3] = new Vector3(edges[3].y, -edges[3].x, edges[3].z);
+        normals[0] = new Vector3(-edges[0].y, edges[0].x, edges[0].z);
+        normals[1] = new Vector3(-edges[1].y, edges[1].x, edges[1].z);
+        normals[2] = new Vector3(-edges[2].y, edges[2].x, edges[2].z);
+        normals[3] = new Vector3(-edges[3].y, edges[3].x, edges[3].z);
 
-        normals[0] = Vector3.Normalize(normals[0]);
-        normals[1] = Vector3.Normalize(normals[1]);
-        normals[2] = Vector3.Normalize(normals[2]);
-        normals[3] = Vector3.Normalize(normals[3]);
+        //normals[0] = Vector3.Normalize(normals[0]);
+        //normals[1] = Vector3.Normalize(normals[1]);
+        //normals[2] = Vector3.Normalize(normals[2]);
+        //normals[3] = Vector3.Normalize(normals[3]);
 
-        for(int i = 0; i < normals.Length; i++)
+
+        for(int i = 0; i < theCar.corners.Length; i++)
         {
-            for(int j = 0; j < theCar.corners.Length; j++)
+            bool[] isInside = new bool[4];
+            for(int j = 0; j < edges.Length; j++)
             {
-                float dp = Vector3.Dot(normals[i], theCar.corners[j] - theBox.corners[i]);
+                float dp = Vector3.Dot(normals[j], theCar.corners[i] - theBox.corners[j]);
+
                 if (dp < 0.0f)
-                    box1InBox2.Add(theCar.corners[j]);
+                {
+                    isInside[j] = true;
+                }
+            }
+            if (isInside[0] && isInside[1] && isInside[2] && isInside[3])
+            {
+                box1InBox2.Add(theCar.corners[i]);
             }
         }
 
@@ -255,32 +263,36 @@ public class Main : MonoBehaviour
 
         Vector3[] normals_2 = new Vector3[4];
 
-        normals_2[0] = new Vector3(edges_2[0].y, -edges_2[0].x, edges_2[0].z);
-        normals_2[1] = new Vector3(edges_2[1].y, -edges_2[1].x, edges_2[1].z);
-        normals_2[2] = new Vector3(edges_2[2].y, -edges_2[2].x, edges_2[2].z);
-        normals_2[3] = new Vector3(edges_2[3].y, -edges_2[3].x, edges_2[3].z);
+        normals_2[0] = new Vector3(-edges_2[0].y, edges_2[0].x, edges_2[0].z);
+        normals_2[1] = new Vector3(-edges_2[1].y, edges_2[1].x, edges_2[1].z);
+        normals_2[2] = new Vector3(-edges_2[2].y, edges_2[2].x, edges_2[2].z);
+        normals_2[3] = new Vector3(-edges_2[3].y, edges_2[3].x, edges_2[3].z);
 
-         normals_2[0] = Vector3.Normalize(normals_2[0]);
-         normals_2[1] = Vector3.Normalize(normals_2[1]);
-         normals_2[2] = Vector3.Normalize(normals_2[2]);
-         normals_2[3] = Vector3.Normalize(normals_2[3]);
+         //normals_2[0] = Vector3.Normalize(normals_2[0]);
+         //normals_2[1] = Vector3.Normalize(normals_2[1]);
+         //normals_2[2] = Vector3.Normalize(normals_2[2]);
+         //normals_2[3] = Vector3.Normalize(normals_2[3]);
 
-        for (int i = 0; i < normals_2.Length; i++)
-        {
-            for (int j = 0; j < theBox.corners.Length; j++)
-            {
-                float dp = Vector3.Dot(normals_2[i], theBox.corners[j] - theCar.corners[i]);
-                if (dp < 0.0f)
-                    box2InBox1.Add(theBox.corners[j]);
-            }
-        }
+         for (int i = 0; i < theBox.corners.Length; i++)
+         {
+             bool[] isInside = new bool[4];
+             for (int j = 0; j < edges_2.Length; j++)
+             {
+                 float dp = Vector3.Dot(normals_2[j], theBox.corners[i] - theCar.corners[j]);
+                 Debug.Log(dp);
+                 if (dp < 0.0f)
+                 {
+                     isInside[j] = true;
+                 }
+             }
+             if (isInside[0] && isInside[1] && isInside[2] && isInside[3])
+             {
+                 box2InBox1.Add(theBox.corners[i]);
+             }
+         }
 
-        Debug.Log(box1InBox2.Count);
-        Debug.Log(box2InBox1.Count);
 
-        Debug.Break();
-
-        if (box1InBox2.Count <= 0 || box2InBox1.Count <= 0)
+        if (box1InBox2.Count <= 0 && box2InBox1.Count <= 0)
         {
             distance = float.MaxValue;
             return new Vector3();
