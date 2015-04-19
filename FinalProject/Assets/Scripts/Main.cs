@@ -13,8 +13,8 @@ public class Main : MonoBehaviour
     Vector3 normalVec;
     float mofI1;
     float mofI2;
-    float vr;
-    float J; // impulse
+    Vector3 vr;
+    Vector3 J; // impulse
     Vector3 omega1;
     Vector3 omega2;
     Vector3 UfN;
@@ -176,22 +176,25 @@ public class Main : MonoBehaviour
             return false;
      */
 
-    void CubeCollisionResponse(Car c, Box b, Vector3 Ui, Vector3 Vi)
+    void CubeCollisionResponse(ref Car c, ref Box b, Vector3 Ui, Vector3 Vi)
     {
-        
+        normalVec = Vector3.Normalize(normalVec);
         r1 = new Vector3(contactPoint.x - c.transform.position.x, contactPoint.y - c.transform.position.y, contactPoint.z - c.transform.position.z);
         r2 = new Vector3(contactPoint.x - b.transform.position.x, contactPoint.y - b.transform.position.y, contactPoint.z - b.transform.position.z);
-        normalVec = new Vector3(0.0f, 1.0f, 0.0f);
         mofI1 = 1.0f / 12.0f * c.carMass * ((Mathf.Pow(c.transform.lossyScale.x, 2.0f) + Mathf.Pow(c.transform.lossyScale.y, 2.0f)));
         mofI2 = 1.0f / 12.0f * b.mass * ((Mathf.Pow(b.transform.lossyScale.x, 2.0f) + Mathf.Pow(b.transform.lossyScale.y, 2.0f)));
-        vr = (Ui.y - Vi.y);
+        vr = (Ui - Vi);
         J = -vr * (b.e + 1.0f) * (1.0f / ((1.0f / c.carMass) + (1.0f / b.mass) + Vector3.Dot(normalVec, Vector3.Cross(Vector3.Cross(r1, normalVec) / mofI1, r1)) + Vector3.Dot(normalVec, Vector3.Cross(Vector3.Cross(r2, normalVec) / mofI2, r2))));
-        omega1 = omega1 + Vector3.Cross(r1, (J * normalVec)) / mofI1;
-        omega2 = omega2 + Vector3.Cross(r2, ((-J) * normalVec)) / mofI2;
-        UfN = ((J * normalVec) / c.carMass) + (Ui.y * normalVec);
-        VfN = (((-J) * normalVec) / b.mass) + (Vi.y * normalVec);
-        c.velocity += UfN * Time.deltaTime;
-        b.velocity += VfN * Time.deltaTime;
+        omega1 = omega1 + (Vector3.Cross(r1, (J.x * normalVec)) / mofI1) + (Vector3.Cross(r1, (J.y * normalVec)) / mofI1) + (Vector3.Cross(r1, (J.z * normalVec)) / mofI1);
+        omega2 = omega2 + (Vector3.Cross(r2, ((-J.x) * normalVec)) / mofI2) + (Vector3.Cross(r2, ((-J.y) * normalVec)) / mofI2) + (Vector3.Cross(r2, ((-J.z) * normalVec)) / mofI2);
+        UfN.x = ((J.x * normalVec.x) / c.carMass) + (Ui.x * normalVec.x);
+        UfN.y = ((J.y * normalVec.y) / c.carMass) + (Ui.y * normalVec.y);
+        UfN.z = 0;
+        VfN.x = (((-J.x) * normalVec.x) / b.mass) + (Vi.x * normalVec.x);
+        VfN.y = (((-J.y) * normalVec.y) / b.mass) + (Vi.y * normalVec.y);
+        VfN.z = 0;
+        c.velocity = UfN;
+        b.velocity = VfN;
     }
 
     public bool CheckCarCollision(Car theCar, Box theBox)
@@ -199,13 +202,13 @@ public class Main : MonoBehaviour
         if (Vector3.Distance(theCar.transform.position, theBox.transform.position) <= theCar.radius + theBox.radius)
         {
             float clipDist;
-            NarrowFace(theCar, theBox, out clipDist);
+            normalVec = NarrowFace(theCar, theBox, out clipDist);
             if (clipDist != float.MaxValue)
+            {
                 Debug.Log("HIT");
+                CubeCollisionResponse(ref car, ref zeroBox, car.velocity, zeroBox.velocity);
+            }
 
-
-            //contactPoint = new Vector3(zeroBox.transform.position.x - 20.0f, car.transform.position.y + ((zeroBox.transform.position.y - car.transform.position.y) / 2.0f), 0.0f);
-            //CubeCollisionResponse(car, zeroBox, car.velocity, zeroBox.velocity);
             return true;
         }
         else
@@ -352,6 +355,14 @@ public class Main : MonoBehaviour
             normal = new Vector3(minEdge2.y, -minEdge2.x, minEdge2.z);
         }
 
+        if (box1InBox2.Count > 0)
+        {
+            contactPoint = (Vector3)box1InBox2[0];
+        }
+        else if (box2InBox1.Count > 0)
+        {
+            contactPoint = (Vector3)box2InBox1[0];
+        }
         distance = clipDist;
         return normal;
     }

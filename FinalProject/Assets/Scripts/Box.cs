@@ -35,7 +35,7 @@ public class Box : MonoBehaviour {
         sphere3 = GameObject.Find("Sphere3");
         sphere4 = GameObject.Find("Sphere4");
 
-        mass = 10;
+        mass = 500;
         velocity = theta = alpha = omega = new Vector3();
         inertia = 0.0f;
         corners = new Vector3[4];
