@@ -299,12 +299,18 @@ public class Main : MonoBehaviour
         for(int i = 0; i < edges.Length; i++)
         {
             float maxDistE2 = float.MaxValue;
-            for(int j = 0; j < theCar.corners.Length; j++)
+            for (int j = 0; j < box1InBox2.Count; j++)
             {
-                float dist = Vector3.Magnitude(theCar.corners[j] - new Vector3(edges[i].x, edges[i].y, theCar.corners[j].z));
+                Vector3 vec = (Vector3)(box1InBox2[j]);
+                float dist = Vector3.Dot(vec, new Vector3(edges[i].x, edges[i].y, vec.z));
                 if(dist < 0 && dist < maxDistE2)
+                {
                     maxDistE2 = dist;
+                    Debug.Log("FUCK1");
+                }
+                    
             }
+
             if(maxDistE2 < minDist1)
             {
                 minDist1 = maxDistE2;
@@ -315,11 +321,16 @@ public class Main : MonoBehaviour
         for (int i = 0; i < edges_2.Length; i++)
         {
             float maxDistE2 = float.MaxValue;
-            for (int j = 0; j < theBox.corners.Length; j++)
+            for (int j = 0; j < box2InBox1.Count; j++)
             {
-                float dist = Vector3.Magnitude(theBox.corners[j] - new Vector3(edges_2[i].x, edges_2[i].y, theBox.corners[j].z));
+                Vector3 vec = (Vector3)(box2InBox1[j]);
+                float dist = Vector3.Dot(vec, new Vector3(edges_2[i].x, edges_2[i].y, vec.z));
                 if (dist < 0 && dist < maxDistE2)
+                {
                     maxDistE2 = dist;
+                    Debug.Log("FUCK2");
+                }
+                    
             }
             if (maxDistE2 < minDist2)
             {
