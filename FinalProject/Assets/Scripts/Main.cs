@@ -219,22 +219,18 @@ public class Main : MonoBehaviour
         ArrayList box1InBox2 = new ArrayList();
         ArrayList box2InBox1 = new ArrayList();
 
-        Vector3[] edges = new Vector3[4];
+        Vector2[] edges = new Vector2[4];
         edges[0] = theBox.corners[1] - theBox.corners[0];
         edges[1] = theBox.corners[2] - theBox.corners[1];
         edges[2] = theBox.corners[3] - theBox.corners[2];
         edges[3] = theBox.corners[0] - theBox.corners[3];
 
-        Vector3[] normals = new Vector3[4];
-        normals[0] = new Vector3(-edges[0].y, edges[0].x, edges[0].z);
-        normals[1] = new Vector3(-edges[1].y, edges[1].x, edges[1].z);
-        normals[2] = new Vector3(-edges[2].y, edges[2].x, edges[2].z);
-        normals[3] = new Vector3(-edges[3].y, edges[3].x, edges[3].z);
+        Vector2[] normals = new Vector2[4];
+        normals[0] = new Vector2(-edges[0].y, edges[0].x);
+        normals[1] = new Vector2(-edges[1].y, edges[1].x);
+        normals[2] = new Vector2(-edges[2].y, edges[2].x);
+        normals[3] = new Vector2(-edges[3].y, edges[3].x);
 
-        //normals[0] = Vector3.Normalize(normals[0]);
-        //normals[1] = Vector3.Normalize(normals[1]);
-        //normals[2] = Vector3.Normalize(normals[2]);
-        //normals[3] = Vector3.Normalize(normals[3]);
 
 
         for(int i = 0; i < theCar.corners.Length; i++)
@@ -242,7 +238,7 @@ public class Main : MonoBehaviour
             bool[] isInside = new bool[4];
             for(int j = 0; j < edges.Length; j++)
             {
-                float dp = Vector3.Dot(normals[j], theCar.corners[i] - theBox.corners[j]);
+                float dp = Vector2.Dot(normals[j], theCar.corners[i] - theBox.corners[j]);
 
                 if (dp < 0.0f)
                 {
@@ -255,31 +251,27 @@ public class Main : MonoBehaviour
             }
         }
 
-        Vector3[] edges_2 = new Vector3[4];
+
+        Vector2[] edges_2 = new Vector2[4];
         edges_2[0] = theCar.corners[1] - theCar.corners[0];
         edges_2[1] = theCar.corners[2] - theCar.corners[1];
         edges_2[2] = theCar.corners[3] - theCar.corners[2];
         edges_2[3] = theCar.corners[0] - theCar.corners[3];
 
-        Vector3[] normals_2 = new Vector3[4];
+        Vector2[] normals_2 = new Vector2[4];
 
-        normals_2[0] = new Vector3(-edges_2[0].y, edges_2[0].x, edges_2[0].z);
-        normals_2[1] = new Vector3(-edges_2[1].y, edges_2[1].x, edges_2[1].z);
-        normals_2[2] = new Vector3(-edges_2[2].y, edges_2[2].x, edges_2[2].z);
-        normals_2[3] = new Vector3(-edges_2[3].y, edges_2[3].x, edges_2[3].z);
+        normals_2[0] = new Vector2(-edges_2[0].y, edges_2[0].x);
+        normals_2[1] = new Vector2(-edges_2[1].y, edges_2[1].x);
+        normals_2[2] = new Vector2(-edges_2[2].y, edges_2[2].x);
+        normals_2[3] = new Vector2(-edges_2[3].y, edges_2[3].x);
 
-         //normals_2[0] = Vector3.Normalize(normals_2[0]);
-         //normals_2[1] = Vector3.Normalize(normals_2[1]);
-         //normals_2[2] = Vector3.Normalize(normals_2[2]);
-         //normals_2[3] = Vector3.Normalize(normals_2[3]);
 
          for (int i = 0; i < theBox.corners.Length; i++)
          {
              bool[] isInside = new bool[4];
              for (int j = 0; j < edges_2.Length; j++)
              {
-                 float dp = Vector3.Dot(normals_2[j], theBox.corners[i] - theCar.corners[j]);
-                 Debug.Log(dp);
+                 float dp = Vector2.Dot(normals_2[j], theBox.corners[i] - theCar.corners[j]);
                  if (dp < 0.0f)
                  {
                      isInside[j] = true;
@@ -309,7 +301,7 @@ public class Main : MonoBehaviour
             float maxDistE2 = float.MaxValue;
             for(int j = 0; j < theCar.corners.Length; j++)
             {
-                float dist = Vector3.Magnitude(theCar.corners[j] - edges[i]);
+                float dist = Vector3.Magnitude(theCar.corners[j] - new Vector3(edges[i].x, edges[i].y, theCar.corners[j].z));
                 if(dist < 0 && dist < maxDistE2)
                     maxDistE2 = dist;
             }
@@ -325,7 +317,7 @@ public class Main : MonoBehaviour
             float maxDistE2 = float.MaxValue;
             for (int j = 0; j < theBox.corners.Length; j++)
             {
-                float dist = Vector3.Magnitude(theBox.corners[j] - edges_2[i]);
+                float dist = Vector3.Magnitude(theBox.corners[j] - new Vector3(edges_2[i].x, edges_2[i].y, theBox.corners[j].z));
                 if (dist < 0 && dist < maxDistE2)
                     maxDistE2 = dist;
             }
