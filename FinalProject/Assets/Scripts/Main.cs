@@ -55,7 +55,7 @@ public class Main : MonoBehaviour
         
         if(CheckCarCollision(car, zeroBox))
         {
-            Debug.Log("HIT");
+            //Debug.Log("HIT");
             /*Vector3 normal = new Vector3(1, 0, 0);
             Vector3 r1 = new Vector3() - car.transform.position;
             Vector3 r2 = new Vector3() - zeroBox.transform.position;
@@ -198,14 +198,147 @@ public class Main : MonoBehaviour
     {
         if (Vector3.Distance(theCar.transform.position, theBox.transform.position) <= theCar.radius + theBox.radius)
         {
-            contactPoint = new Vector3(zeroBox.transform.position.x - 20.0f, car.transform.position.y + ((zeroBox.transform.position.y - car.transform.position.y) / 2.0f), 0.0f);
-            CubeCollisionResponse(car, zeroBox, car.velocity, zeroBox.velocity);
+            float clipDist;
+            NarrowFace(theCar, theBox, out clipDist);
+            if (clipDist != float.MaxValue)
+                Debug.Log("HIT");
+
+            Debug.Log(clipDist);
+
+            //contactPoint = new Vector3(zeroBox.transform.position.x - 20.0f, car.transform.position.y + ((zeroBox.transform.position.y - car.transform.position.y) / 2.0f), 0.0f);
+            //CubeCollisionResponse(car, zeroBox, car.velocity, zeroBox.velocity);
             return true;
         }
         else
         {
             return false;
         }
+    }
+
+    public Vector3 NarrowFace(Car theCar, Box theBox, out float distance)
+    {
+        ArrayList box1InBox2 = new ArrayList();
+        ArrayList box2InBox1 = new ArrayList();
+
+        Vector3[] edges = new Vector3[4];
+        edges[0] = theBox.corners[1] - theBox.corners[0];
+        edges[1] = theBox.corners[2] - theBox.corners[1];
+        edges[2] = theBox.corners[3] - theBox.corners[2];
+        edges[3] = theBox.corners[0] - theBox.corners[3];
+
+        Vector3[] normals = new Vector3[4];
+        normals[0] = new Vector3(edges[0].y, -edges[0].x, edges[0].z);
+        normals[1] = new Vector3(edges[1].y, -edges[1].x, edges[1].z);
+        normals[2] = new Vector3(edges[2].y, -edges[2].x, edges[2].z);
+        normals[3] = new Vector3(edges[3].y, -edges[3].x, edges[3].z);
+
+        normals[0] = Vector3.Normalize(normals[0]);
+        normals[1] = Vector3.Normalize(normals[1]);
+        normals[2] = Vector3.Normalize(normals[2]);
+        normals[3] = Vector3.Normalize(normals[3]);
+
+        for(int i = 0; i < normals.Length; i++)
+        {
+            for(int j = 0; j < theCar.corners.Length; j++)
+            {
+                float dp = Vector3.Dot(normals[i], theCar.corners[j] - theBox.corners[i]);
+                if (dp < 0.0f)
+                    box1InBox2.Add(theCar.corners[j]);
+            }
+        }
+
+        Vector3[] edges_2 = new Vector3[4];
+        edges_2[0] = theCar.corners[1] - theCar.corners[0];
+        edges_2[1] = theCar.corners[2] - theCar.corners[1];
+        edges_2[2] = theCar.corners[3] - theCar.corners[2];
+        edges_2[3] = theCar.corners[0] - theCar.corners[3];
+
+        Vector3[] normals_2 = new Vector3[4];
+
+        normals_2[0] = new Vector3(edges_2[0].y, -edges_2[0].x, edges_2[0].z);
+        normals_2[1] = new Vector3(edges_2[1].y, -edges_2[1].x, edges_2[1].z);
+        normals_2[2] = new Vector3(edges_2[2].y, -edges_2[2].x, edges_2[2].z);
+        normals_2[3] = new Vector3(edges_2[3].y, -edges_2[3].x, edges_2[3].z);
+
+         normals_2[0] = Vector3.Normalize(normals_2[0]);
+         normals_2[1] = Vector3.Normalize(normals_2[1]);
+         normals_2[2] = Vector3.Normalize(normals_2[2]);
+         normals_2[3] = Vector3.Normalize(normals_2[3]);
+
+        for (int i = 0; i < normals_2.Length; i++)
+        {
+            for (int j = 0; j < theBox.corners.Length; j++)
+            {
+                float dp = Vector3.Dot(normals_2[i], theBox.corners[j] - theCar.corners[i]);
+                if (dp < 0.0f)
+                    box2InBox1.Add(theBox.corners[j]);
+            }
+        }
+
+        Debug.Log(box1InBox2.Count);
+        Debug.Log(box2InBox1.Count);
+
+        Debug.Break();
+
+        if (box1InBox2.Count <= 0 || box2InBox1.Count <= 0)
+        {
+            distance = float.MaxValue;
+            return new Vector3();
+        }
+
+        float minDist1 = float.MaxValue;
+        float minDist2 = float.MaxValue;
+
+        Vector3 minEdge1 = new Vector3();
+        Vector3 minEdge2 = new Vector3();
+
+        for(int i = 0; i < edges.Length; i++)
+        {
+            float maxDistE2 = float.MaxValue;
+            for(int j = 0; j < theCar.corners.Length; j++)
+            {
+                float dist = Vector3.Magnitude(theCar.corners[j] - edges[i]);
+                if(dist < 0 && dist < maxDistE2)
+                    maxDistE2 = dist;
+            }
+            if(maxDistE2 < minDist1)
+            {
+                minDist1 = maxDistE2;
+                minEdge1 = edges[i];
+            }
+        }
+
+        for (int i = 0; i < edges_2.Length; i++)
+        {
+            float maxDistE2 = float.MaxValue;
+            for (int j = 0; j < theBox.corners.Length; j++)
+            {
+                float dist = Vector3.Magnitude(theBox.corners[j] - edges_2[i]);
+                if (dist < 0 && dist < maxDistE2)
+                    maxDistE2 = dist;
+            }
+            if (maxDistE2 < minDist2)
+            {
+                minDist2 = maxDistE2;
+                minEdge2 = edges[i];
+            }
+        }
+
+        float clipDist = 0;
+        Vector3 normal;
+        if(minDist1 < minDist2)
+        {
+            clipDist = minDist1;
+            normal = new Vector3(minEdge1.y, -minEdge1.x, minEdge1.z);
+        }
+        else
+        {
+            clipDist = minDist2;
+            normal = new Vector3(minEdge2.y, -minEdge2.x, minEdge2.z);
+        }
+
+        distance = clipDist;
+        return normal;
     }
 
     public static Vector3 CalculateVR(Vector3 uInitial, Vector3 vInital)

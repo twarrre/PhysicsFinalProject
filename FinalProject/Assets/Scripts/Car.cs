@@ -170,7 +170,7 @@ public class Car : MonoBehaviour
 
         //uforce cause equation takes mass into consideration sp not acceleration?
         velocity = (uforce - Mathf.Exp(-(c * Time.deltaTime / (tankMass + driverMass + carMass))) * (uforce - c * velocity)) / c;
-        Debug.Log("velocity: " + velocity);
+        //Debug.Log("velocity: " + velocity);
         this.transform.position = this.transform.position + (acceleration / c * Time.deltaTime) + ((acceleration - (c * velocity)) / c) * ((tankMass + driverMass + carMass) / c) * (Mathf.Exp(-(c * Time.deltaTime / (tankMass + driverMass + carMass))) - 1);
 
         //velocity = CalculateFinalVelocity(velocity, acceleration, Time.deltaTime);
